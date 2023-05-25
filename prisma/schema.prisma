@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(uuid()) @map("_id")
+  username         String    @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  sentMessages     Message[] @relation("SentMessages") // Added relation to Message model
+  receivedMessages Message[] @relation("ReceivedMessages") // Added relation to Message model
+  userA            Chat[]    @relation("ParticipantA") // Added relation to Chat model
+  userB            Chat[]    @relation("ParticipantB") // Added relation to Chat model
+}
+
+model Chat {
+  id             String    @id @default(cuid()) @map("_id")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  participantA   User      @relation("ParticipantA", fields: [participantAId], references: [id])
+  participantAId String
+  participantB   User      @relation("ParticipantB", fields: [participantBId], references: [id])
+  participantBId String
+  messages       Message[] // Messages associated with the chat
+}
+
+model Message {
+  id         String   @id @default(cuid()) @map("_id")
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  sender     User     @relation(name: "SentMessages", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User     @relation(name: "ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId String
+  chat       Chat     @relation(fields: [chatId], references: [id])
+  chatId     String
+}
