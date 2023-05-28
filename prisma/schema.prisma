@@ -8,10 +8,9 @@ datasource db {
 }
 
 model User {
-  id               String    @id @default(uuid()) @map("_id")
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
   username         String    @unique
   createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
   sentMessages     Message[] @relation("SentMessages") // Added relation to Message model
   receivedMessages Message[] @relation("ReceivedMessages") // Added relation to Message model
   userA            Chat[]    @relation("ParticipantA") // Added relation to Chat model
@@ -19,25 +18,30 @@ model User {
 }
 
 model Chat {
-  id             String    @id @default(cuid()) @map("_id")
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
   participantA   User      @relation("ParticipantA", fields: [participantAId], references: [id])
-  participantAId String
+  participantAId String    @db.ObjectId
   participantB   User      @relation("ParticipantB", fields: [participantBId], references: [id])
-  participantBId String
+  participantBId String    @db.ObjectId
   messages       Message[] // Messages associated with the chat
+
+  @@index([participantAId], name: "participantAId")
+  @@index([participantBId], name: "participantBId")
 }
 
 model Message {
-  id         String   @id @default(cuid()) @map("_id")
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
   content    String
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
   sender     User     @relation(name: "SentMessages", fields: [senderId], references: [id])
-  senderId   String
+  senderId   String   @db.ObjectId
   receiver   User     @relation(name: "ReceivedMessages", fields: [receiverId], references: [id])
-  receiverId String
+  receiverId String   @db.ObjectId
   chat       Chat     @relation(fields: [chatId], references: [id])
-  chatId     String
+  chatId     String   @db.ObjectId
+
+  @@index([senderId], name: "senderId")
+  @@index([receiverId], name: "receiverId")
+  @@index([chatId], name: "chatId")
 }
