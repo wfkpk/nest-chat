@@ -26,6 +26,8 @@ model Chat {
   participantBId String    @db.ObjectId
   messages       Message[] // Messages associated with the chat
 
+  keyPair KeyPair?
+
   @@index([participantAId], name: "participantAId")
   @@index([participantBId], name: "participantBId")
 }
@@ -44,4 +46,12 @@ model Message {
   @@index([senderId], name: "senderId")
   @@index([receiverId], name: "receiverId")
   @@index([chatId], name: "chatId")
+}
+
+model KeyPair {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  publicKey  String
+  privateKey String
+  chat       Chat   @relation(fields: [chatId], references: [id])
+  chatId     String @unique @db.ObjectId
 }
